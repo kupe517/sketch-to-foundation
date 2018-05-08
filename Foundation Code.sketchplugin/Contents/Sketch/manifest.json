@@ -1,0 +1,33 @@
+{
+  "author" : "",
+  "commands" : [
+    {
+      "script" : "script.js",
+      "name" : "Foundation Code",
+      "handlers" : {
+        "run" : "onRun"
+      },
+      "identifier" : "com.bohemiancoding.sketch.runscriptidentifier"
+    },
+		{
+      "script" : "copyCSS.js",
+      "name" : "Copy Styles",
+      "handlers" : {
+        "run" : "onRun"
+      },
+      "identifier" : "foundation.copystyles"
+    }
+  ],
+  "menu" : {
+    "title" : "Foundation Code",
+    "items" : [
+      "com.bohemiancoding.sketch.runscriptidentifier",
+			"foundation.copystyles"
+    ]
+  },
+  "identifier" : "com.example.sketch.3923eeed-eaf0-44e1-b272-efe7b1d6162a",
+  "version" : "1.0",
+  "description" : "",
+  "authorEmail" : "",
+  "name" : "Foundation Code"
+}
