@@ -4,7 +4,8 @@ var UI = require('sketch/ui');
 var document = sketch.Document.getSelectedDocument();
 var selection = document.selectedLayers;
 var type = selection.layers[0].type;
-var children = selection.layers[0].layers;
+var parent = selection.layers[0].parent;
+var children = parent.layers[0].layers;
 var layers = [];
 var code = [];
 
@@ -45,16 +46,22 @@ var clipboard = {
 
 var onRun = function(context) {
 	if (type !== 'Artboard') {
-		UI.message("Please select the artboard and run this command again");
-		return;
+		findParentArtboard();
 	}
 	orderLayers(context);
 };
 
+var findParentArtboard = function(){
+	while (parent && parent.type !== "Artboard"){
+  	parent = parent.parent
+	}
+	children = parent.layers[0].layers;
+}
+
 var orderLayers = function(context){
 
 	if (children.length == 1) {
-		children = selection.layers[0].layers[0].layers;
+		children = parent.layers[0].layers[0].layers;
 	}
 
 	children.forEach(layer => {
@@ -70,44 +77,29 @@ var copyLayers = function(){
 
 	layers.forEach(layer => {
 		if (layer.type == 'SymbolInstance') {
-			var symbolMaster = document.getSymbolMasterWithID(layer.symbolId)
-			var layerName = symbolMaster.name;
-			var modifiers;
-			if (layerName.includes('/')) {
-				layerName = layerName.split('/');
-				if (layerName[1].includes('+')) {
-					modifiers = layerName[1].split('+');
-					var modifierString = '';
-					for (i = 0; i < modifiers.length; i++) {
-						modifierString += modifiers[i] + '="true" ';
-					}
-				}else{
-						modifierString = layerName[1] + '="true" ';
-				}
+			var layerName = layer.name + " ";
+			var overrides = layer.overrides
 
-				if (layerName[0] == "section-header") {
-					if(layer.overrides.length > 2){
-							modifierString += 'description_txt="' + layer.overrides[1].value + '" ';
-					}
-					modifierString += 'title_txt="' + layer.overrides[0].value + '" ';
-				}
+			  overrides.forEach(override => {
+			    if(override.property == "stringValue" || override.property == "image"){
+			      var layerID = override.path;
+			      if(layerID.includes("/")){
+			        var trueID = layerID.split("/")
+			        var length = trueID.length - 1
+			        trueID = trueID[length]
+								if(!document.getLayerWithID(trueID).hidden){
+                  var option = document.getLayerWithID(trueID).name.toLowerCase();
+                  layerName += option + '="true" ';
+                  }
+			      }else if(!document.getLayerWithID(override.path).hidden){
+			        var option = document.getLayerWithID(override.path).name.toLowerCase();
+			        layerName += option + '="true" ';
+			      }
+			    }
+			  })
 
-				if(layerName[0] == "story-colorblock-text"){
-						if(layer.overrides.length > 2){
-							modifierString += 'deck_txt="' + layer.overrides[2].value + '" ';
-						}
-						modifierString += 'title_txt="' + layer.overrides[1].value + '" ';
-				}
-
-				if (layerName[0] == "header-horizontal" || layerName[0] == "header-stacked") {
-					if(modifiers[1] == 'title'){
-							modifierString += 'title_txt="' + layer.overrides[1].value + '" ';
-					}
-				}
-				//log(modifierString);
-				layerName = layerName[0] + " " + modifierString;
-			}
-			//log(layerName);
+			layerName = layerName.slice(0, -1)
+			layerName = cleanString(layerName)
 			code.push('{{> ' + layerName + ' }}');
 		}
 	});
@@ -120,4 +112,11 @@ var copyLayers = function(){
 	//UI.alert('Foundation Code', prettyLayers);
 
 	//log(code);
+};
+
+var cleanString = function(string){
+	var uniqueList = string.split(' ').filter(function(item,i,allItems){
+    return i == allItems.indexOf(item);
+	}).join(' ');
+	return uniqueList;
 };
