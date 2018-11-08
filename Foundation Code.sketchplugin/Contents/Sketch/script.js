@@ -52,6 +52,7 @@ var onRun = function(context) {
 };
 
 var findParentArtboard = function(){
+	/* Search up the layers until we find the parent artboard */
 	while (parent && parent.type !== "Artboard"){
   	parent = parent.parent
 	}
@@ -61,7 +62,7 @@ var findParentArtboard = function(){
 var orderLayers = function(context){
 
 	if (children.length == 1) {
-		children = parent.layers[0].layers[0].layers;
+		children = selection.layers[0].layers[0].layers;
 	}
 
 	children.forEach(layer => {
@@ -75,11 +76,15 @@ var orderLayers = function(context){
 
 var copyLayers = function(){
 
+	/* Loop through the layers on the artboard */
 	layers.forEach(layer => {
 		if (layer.type == 'SymbolInstance') {
-			var layerName = layer.name + " ";
-			var overrides = layer.overrides
+			var symbolMaster = document.getSymbolMasterWithID(layer.symbolId);
+			var partialName = symbolMaster.name;
+			var layerName = partialName + " ";
+			var overrides = layer.overrides;
 
+			/* Loop through the overrides of each symbol layer, ignore everything but strings and images */
 			  overrides.forEach(override => {
 			    if(override.property == "stringValue" || override.property == "image"){
 			      var layerID = override.path;
@@ -87,16 +92,25 @@ var copyLayers = function(){
 			        var trueID = layerID.split("/")
 			        var length = trueID.length - 1
 			        trueID = trueID[length]
-								if(!document.getLayerWithID(trueID).hidden){
+							/* If a layer is hidden or lock don't add it to the code output */
+								if(!document.getLayerWithID(trueID).hidden && !document.getLayerWithID(trueID).locked){
                   var option = document.getLayerWithID(trueID).name.toLowerCase();
                   layerName += option + '="true" ';
                   }
-			      }else if(!document.getLayerWithID(override.path).hidden){
+			      }else if(!document.getLayerWithID(override.path).hidden && !document.getLayerWithID(override.path).locked){
 			        var option = document.getLayerWithID(override.path).name.toLowerCase();
 			        layerName += option + '="true" ';
 			      }
 			    }
 			  })
+
+				/* For section headers get the override value and add it to the partial code to be displayed */
+				if(partialName === 'section-header'){
+					layerName += 'title_txt="' + overrides[3].value + '" ';
+					if(!overrides[1].isDefault){
+						layerName += 'description_txt="' + overrides[1].value + '" ';
+					}
+				}
 
 			layerName = layerName.slice(0, -1)
 			layerName = cleanString(layerName)
@@ -109,9 +123,6 @@ var copyLayers = function(){
 	clipboard.set(prettyLayers);
 	UI.message('Foundation code copied to clipboard');
 
-	//UI.alert('Foundation Code', prettyLayers);
-
-	//log(code);
 };
 
 var cleanString = function(string){

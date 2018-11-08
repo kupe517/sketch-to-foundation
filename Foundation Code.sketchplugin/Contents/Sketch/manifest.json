@@ -3,7 +3,7 @@
   "commands" : [
     {
       "script" : "script.js",
-      "name" : "Foundation Code",
+      "name" : "Copy Layout",
       "handlers" : {
         "run" : "onRun"
       },
@@ -26,7 +26,7 @@
     ]
   },
   "identifier" : "com.example.sketch.3923eeed-eaf0-44e1-b272-efe7b1d6162a",
-  "version" : "1.0",
+  "version" : "2.0",
   "description" : "",
   "authorEmail" : "",
   "name" : "Foundation Code"
