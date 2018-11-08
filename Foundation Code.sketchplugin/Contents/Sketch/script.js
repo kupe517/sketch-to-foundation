@@ -5,7 +5,7 @@ var document = sketch.Document.getSelectedDocument();
 var selection = document.selectedLayers;
 var type = selection.layers[0].type;
 var parent = selection.layers[0].parent;
-var children = parent.layers[0].layers;
+var children = selection.layers[0].layers;
 var layers = [];
 var code = [];
 
