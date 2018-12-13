@@ -10,6 +10,14 @@
       "identifier" : "com.bohemiancoding.sketch.runscriptidentifier"
     },
 		{
+      "script" : "legacy.js",
+      "name" : "Copy Layout (Legacy Mode)",
+      "handlers" : {
+        "run" : "onRun"
+      },
+      "identifier" : "foundation.copylegacy"
+    },
+		{
       "script" : "copyCSS.js",
       "name" : "Copy Styles",
       "handlers" : {
@@ -22,7 +30,8 @@
     "title" : "Foundation Code",
     "items" : [
       "com.bohemiancoding.sketch.runscriptidentifier",
-			"foundation.copystyles"
+			"foundation.copystyles",
+			"foundation.copylegacy"
     ]
   },
   "identifier" : "com.example.sketch.3923eeed-eaf0-44e1-b272-efe7b1d6162a",

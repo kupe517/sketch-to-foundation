@@ -1,16 +1,16 @@
 var css = ``;
 var count = 0;
-var sketch = require('sketch/dom');
-var Settings = require('sketch/settings');
-var UI = require('sketch/ui');
-var document = sketch.Document.getSelectedDocument();
-var page = document.selectedPage;
+var sketch, document, selection;
 
 function onRun(context) {
 
-	page.layers.forEach( layer => {
-		processLayers(layer);
-	})
+	sketch = context.api();
+	document = sketch.selectedDocument;
+	selection = document.selectedLayers;
+
+	selection.iterate(function(layer) {
+		processLayerRecursively(layer);
+	});
 
 };
 
@@ -49,21 +49,28 @@ var clipboard = {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function processLayers(layer) {
+function processLayerRecursively (layer, parent) {
 
 	var sketchObject = layer.sketchObject;
 
-	if (sketchObject.class() != MSSliceLayer && sketchObject.class() != MSLayerGroup) {
+	if (sketchObject.isVisible() && sketchObject.class() != MSSliceLayer && sketchObject.class() != MSLayerGroup) {
 
-		if (layer.type === 'ShapePath') {
-			css += shapeCode(layer) + '\n';
-		} else if (layer.type === 'Text') {
+		if (layer.isShape) {
+			if (isRectangle(sketchObject) || isCircle(sketchObject)) {
+				css += layerWithPropertiesCode(sketchObject);
+			} else {
+				css += layerCode(sketchObject) + '\n';
+			}
+
+		} else if (layer.isText) {
 			css += textLayerCode(sketchObject) + '\n';
+		} else {
+			css += layerCode(sketchObject) + '\n';
 		}
 	}
 	count++;
-	if(count == page.layers.length){
-		UI.message("CSS Properties Copied to Clipboard");
+	if(count == selection.length){
+		sketch.message("CSS Properties Copied to Clipboard");
 		clipboard.set(css);
 	}
 };
@@ -156,11 +163,14 @@ function textLayerCode(layer) {
 
 //------------------------------------------------------------------------------
 
-function shapeCode(layer) {
-	var cssCode = '.' + layer.name + '{ \n';
+function layerCode(layer) {
 
-	var background = layer.style.fills[0].color.slice(0, -2);
-	cssCode += '  background-color: ' + background + '; \n';
+	var cssCode = '.' + layer.name() + '{ \n';
+
+	var opacity = layer.style().contextSettings().opacity();
+	if (opacity != 1) {
+		cssCode += '  opacity: ' + opacity + '; \n';
+	}
 
 	cssCode += '} \n';
 

@@ -121,7 +121,7 @@ var copyLayers = function(){
 	var prettyLayers = code.reverse().toString().split(",").join("\n");
 
 	clipboard.set(prettyLayers);
-	UI.message('Foundation code copied to clipboard');
+	UI.message('Foundation layout copied to clipboard');
 
 };
 
